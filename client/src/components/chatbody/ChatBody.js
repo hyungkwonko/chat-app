@@ -42,16 +42,23 @@ const ChatBody = ({ match, currentChattingMember, setOnlineUserList }) => {
       : "chat-message-left pb-3";
   };
 
+  console.log("loggedInUserId: ", loggedInUserId)
+
   socket.onmessage = (event) => {
     const data = JSON.parse(event.data);
     const chatId = CommonUtil.getActiveChatId(match);
+    // console.log(CommonUtil.getUserId());
     const userId = CommonUtil.getUserId();
     if (chatId === data.roomId) {
-      if (data.action === SocketActions.MESSAGE) {
+      if (data.action === SocketActions.MESSAGE) { // (onlineUser, typing) === message
         data["userImage"] = ServerUrl.BASE_URL.slice(0, -1) + data.userImage;
-        setMessages((prevState) => {
+        setMessages((prevState) => { // prevState: array of messages
+          console.log("SocketActions.MESSAGE: ", SocketActions.MESSAGE);
+          console.log("prevState: ", prevState);
+          console.log("data: ", data);
+          console.log("=========")
           let messagesState = JSON.parse(JSON.stringify(prevState));
-          messagesState.results.unshift(data);
+          messagesState.results.unshift(data); // messagesState.results: array of messages; put in a new data (msg) to the front
           return messagesState;
         });
         setTyping(false);
@@ -66,17 +73,22 @@ const ChatBody = ({ match, currentChattingMember, setOnlineUserList }) => {
 
   const messageSubmitHandler = (event) => {
     event.preventDefault();
+    // console.log("SocketActions.MESSAGE: ", SocketActions.MESSAGE);
+    // console.log("inputMessage: ", inputMessage);
+    // console.log("CommonUtil.getUserId(): ", CommonUtil.getUserId());
+    // console.log("CommonUtil.getActiveChatId(match): ", CommonUtil.getActiveChatId(match));
+
     if (inputMessage) {
       socket.send(
         JSON.stringify({
-          action: SocketActions.MESSAGE,
-          message: inputMessage,
-          user: CommonUtil.getUserId(),
-          roomId: CommonUtil.getActiveChatId(match),
+          action: SocketActions.MESSAGE, // message
+          message: inputMessage, // this is the actual msg
+          user: CommonUtil.getUserId(), // user's id (integer) (who wrote the msg)
+          roomId: CommonUtil.getActiveChatId(match), // chatting room id, e.g., XbNMFasjCZwK2zUCUy4kZi
         })
       );
     }
-    setInputMessage("");
+    setInputMessage(""); // erase all and go back to 'placeholder: Type your message' after sending
   };
 
   const sendTypingSignal = (typing) => {
@@ -155,7 +167,12 @@ const ChatBody = ({ match, currentChattingMember, setOnlineUserList }) => {
               </div>
               <div className="flex-shrink-1 bg-light ml-1 rounded py-2 px-3 mr-3">
                 <div className="font-weight-bold mb-1">{message.userName}</div>
-                {message.message}
+                {(loggedInUserId === message.user || loggedInUserId !== 3) ? ( // number is for CSR
+                  message.message
+                ) : (
+                  message.message_receiver
+                )}
+                {/* {message.message} */}
               </div>
             </div>
           ))}
@@ -165,8 +182,14 @@ const ChatBody = ({ match, currentChattingMember, setOnlineUserList }) => {
         <form onSubmit={messageSubmitHandler}>
           <div className="input-group">
             <input
-              onChange={(event) => setInputMessage(event.target.value)}
-              onKeyUp={chatMessageTypingHandler}
+              onChange={(event) => {
+                setInputMessage(event.target.value)
+                // console.log("event: ", event);
+                // console.log("event.target: ", event.target);
+                // console.log("event.target.value: ", event.target.value); // this is the msg we write (changes in real-time)
+              }
+              }
+              onKeyUp={chatMessageTypingHandler}  // give signal that the other person is writing
               value={inputMessage}
               id="chat-message-input"
               type="text"

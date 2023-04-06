@@ -1,4 +1,4 @@
-from django.contrib.auth.password_validation import validate_password
+# from django.contrib.auth.password_validation import validate_password
 from django.db import transaction
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 from rest_framework import serializers
@@ -24,7 +24,11 @@ class SignupSerializer(serializers.ModelSerializer):
 		validators=[UniqueValidator(queryset=User.objects.all())]
 	)
 	password = serializers.CharField(
-		write_only=True, required=True, validators=[validate_password]
+		write_only=True, required=True
+		# write_only=True, required=True, validators=[validate_password]
+		# removed validation process here because we can do it on the client side
+		# refer to 'SignupScreen.js' file
+		# (do not need to have two different validation rules)
 	)
 	passwordTwo = serializers.CharField(write_only=True, required=True)
 
@@ -48,7 +52,7 @@ class SignupSerializer(serializers.ModelSerializer):
 		return attrs
 
 	@transaction.atomic
-	def create(self, validated_data):
+	def create(self, validated_data): # validated data: {'first_name': 'peter', ...}
 		user = User.objects.create(
 			username=validated_data['email'],
 			email=validated_data['email'],

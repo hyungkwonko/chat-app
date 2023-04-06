@@ -1,3 +1,6 @@
+// reference (react, form, ...register, etc)
+// https://blog.toycrane.xyz/react%EC%97%90%EC%84%9C-form-%EC%89%BD%EA%B2%8C-%EB%8B%A4%EB%A3%A8%EA%B8%B0-b3b192cf2b33
+
 import React, { useRef } from "react";
 import { useForm } from "react-hook-form";
 import { Link } from "react-router-dom";
@@ -17,24 +20,27 @@ const SignupScreen = ({ history }) => {
   password.current = watch("password");
   const image = watch("image");
 
-  const onSubmit = async (signupData) => {
+  const onSubmit = async (signupData) => {  // signupData: {first_name: "peter", ...}
     const formData = new FormData();
     formData.append("image", signupData.image[0]);
     delete signupData["image"];
+    // console.log("signupData: ", signupData)
     Object.keys(signupData).forEach((key) => {
       formData.append(key, signupData[key]);
     });
     const successSignupData = await ApiConnector.sendPostRequest(
-      ApiEndpoints.SIGN_UP_URL,
+      ApiEndpoints.SIGN_UP_URL, // 'api/v1/signup'
       formData,
       false,
       true
     );
-    if (successSignupData) {
+    if (successSignupData) {  // if success for sign up, then 'true', else 'false'
       history.push({
-        pathname: AppPaths.LOGIN,
-        state: { redirectFrom: AppPaths.SIGN_UP },
+        pathname: AppPaths.LOGIN, // '/login': go back to the login page
+        state: { redirectFrom: AppPaths.SIGN_UP }, // '/signup'
       });
+    } else { // if fails to sign up
+      alert('fail to sign up')
     }
   };
 
@@ -53,6 +59,7 @@ const SignupScreen = ({ history }) => {
             {errors.first_name && (
               <p className="requiredFieldError">This field is required</p>
             )}
+            {/* {(console.log(errors))} */}
           </div>
           <div className="authFieldContainer">
             <input
@@ -127,7 +134,7 @@ const SignupScreen = ({ history }) => {
           </button>
         </form>
         <p id="authFormFooter">
-          Already have an account. <Link to="/login">Click here</Link> to login.
+          Already have an account? <Link to="/login">Click here</Link> to login.
         </p>
       </div>
     </div>

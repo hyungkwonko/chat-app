@@ -16,16 +16,18 @@ const LoginScreen = ({ location }) => {
 
   const onSubmit = async (loginData) => {
     const successLoginData = await ApiConnector.sendPostRequest(
-      ApiEndpoints.LOGIN_URL,
-      JSON.stringify(loginData),
+      ApiEndpoints.LOGIN_URL, // 'api/v1/login'
+      JSON.stringify(loginData),  // {"username": "a@gmail.com", "password": "a"}
       false,
       false
     );
-    if (successLoginData) {
+    if (successLoginData) { // console.log(successLoginData): true/false
       Object.keys(successLoginData).forEach((key) => {
         CookieUtil.setCookie(key, successLoginData[key]);
       });
-      window.location.href = AppPaths.HOME;
+      window.location.href = AppPaths.HOME; // '/'
+    } else {
+      alert("Please check the username or password") // alert when the username / password is not correct
     }
   };
 
@@ -78,7 +80,7 @@ const LoginScreen = ({ location }) => {
           </button>
         </form>
         <p id="authFormFooter">
-          Don't have any account! <Link to="/signup">Click here</Link> to
+          Don't have any account? <Link to="/signup">Click here</Link> to
           singup.
         </p>
       </div>

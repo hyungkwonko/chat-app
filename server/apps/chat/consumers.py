@@ -4,6 +4,13 @@ from channels.generic.websocket import AsyncWebsocketConsumer
 from apps.chat.models import ChatRoom, ChatMessage
 from apps.user.models import User, OnlineUser
 
+# added to use openai api
+import openai
+
+with open("./openai-api.txt", "r") as file:
+    openai.api_key = file.readlines()[0]
+
+
 class ChatConsumer(AsyncWebsocketConsumer):
 	def getUser(self, userId):
 		return User.objects.get(id=userId)
@@ -25,16 +32,30 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			pass
 
 	def saveMessage(self, message, userId, roomId):
+
+		# we can use chatgpt API here
+		request = 'Please paraphrase the provided sentence into a more gentle one'
+		messages = [
+			{
+				"role": "user",
+				"content": f"{request}: {message}",
+			},
+		]
+		response = openai.ChatCompletion.create(model="gpt-3.5-turbo", messages=messages)
+		message_receiver = response['choices'][0]['message']['content'].strip()
+		# message_receiver = ''
+
 		userObj = User.objects.get(id=userId)
 		chatObj = ChatRoom.objects.get(roomId=roomId)
 		chatMessageObj = ChatMessage.objects.create(
-			chat=chatObj, user=userObj, message=message
+			chat=chatObj, user=userObj, message=message, message_receiver=message_receiver
 		)
 		return {
 			'action': 'message',
 			'user': userId,
 			'roomId': roomId,
 			'message': message,
+			'message_receiver': message_receiver,
 			'userImage': userObj.image.url,
 			'userName': userObj.first_name + " " + userObj.last_name,
 			'timestamp': str(chatMessageObj.timestamp)
@@ -77,6 +98,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			)
 
 	async def receive(self, text_data):
+		print("text_data: ", text_data)
 		text_data_json = json.loads(text_data)
 		action = text_data_json['action']
 		roomId = text_data_json['roomId']
@@ -97,6 +119,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 			}
 		)
 
+		print(f"chatMessage: {chatMessage}")
+
 	async def chat_message(self, event):
 		message = event['message']
+		print(f"message: {message}\n")
 		await self.send(text_data=json.dumps(message))

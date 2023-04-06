@@ -24,11 +24,13 @@ class UserView(ListAPIView):
 			return []
 		return super().get_queryset().exclude(id__in=excludeUsersArr)
 
+
 class LoginApiView(TokenObtainPairView):
 	permission_classes = [AllowAny]
 	serializer_class = LoginSerializer
 
+
 class SignupApiView(CreateAPIView):
 	permission_classes = [AllowAny]
-	queryset = User.objects.all()
+	queryset = User.objects.all() # retrieve all registered users
 	serializer_class = SignupSerializer

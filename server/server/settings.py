@@ -97,20 +97,29 @@ CORS_ALLOWED_ORIGINS = [
 ]
 
 # Password validation
+# this is the validation rule for the password
 # https://docs.djangoproject.com/en/3.2/ref/settings/#auth-password-validators
 
 AUTH_PASSWORD_VALIDATORS = [
     {
         'NAME': 'django.contrib.auth.password_validation.UserAttributeSimilarityValidator',
+        # checks the similarity between the password and a set of attributes of the user.
     },
     {
         'NAME': 'django.contrib.auth.password_validation.MinimumLengthValidator',
+        # default=8 (we can manipulate using 'OPTIONS' keyword)
+        # e.g.,
+        # 'OPTIONS': {
+        #     'min_length': 9,
+        # },
     },
     {
         'NAME': 'django.contrib.auth.password_validation.CommonPasswordValidator',
+        # checks whether the password occurs in a list of common passwords
     },
     {
         'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator',
+        # checks whether the password isn’t entirely numeric.
     },
 ]
 
